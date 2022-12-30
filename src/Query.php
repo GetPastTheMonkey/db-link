@@ -19,7 +19,7 @@ final class Query implements Countable, Iterator
     private int $limit;
 
     // Data storage
-    private ?array $data = NULL;
+    private ?array $data = null;
     private int $data_index = 0;
 
     public function __construct(string $model_class)
@@ -49,7 +49,7 @@ final class Query implements Countable, Iterator
 
     private function invalidate(): void
     {
-        $this->data = NULL;
+        $this->data = null;
     }
 
     //////////////////////////////////////////////////
@@ -123,7 +123,7 @@ final class Query implements Countable, Iterator
 
     /**
      * Return the key of the current model entity
-     * @return int|null Key of the current model entity, or NULL if the iterator is invalid
+     * @return int|null Key of the current model entity, or null if the iterator is invalid
      */
     public function key(): ?int
     {
@@ -134,7 +134,7 @@ final class Query implements Countable, Iterator
         }
         else
         {
-            return NULL;
+            return null;
         }
     }
 

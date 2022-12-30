@@ -6,7 +6,7 @@ use PDO;
 
 final class DatabaseManager
 {
-    private static ?PDO $PDO = NULL;
+    private static ?PDO $PDO = null;
 
     public static function getPDO(): PDO
     {
