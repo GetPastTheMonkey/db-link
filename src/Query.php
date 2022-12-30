@@ -9,7 +9,7 @@ use PDO;
 use ReflectionException;
 use ReflectionProperty;
 
-class Query implements Countable, Iterator
+final class Query implements Countable, Iterator
 {
     private readonly string $model_class;
     private readonly PDO $PDO;
