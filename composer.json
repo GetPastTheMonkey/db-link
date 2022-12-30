@@ -1,0 +1,18 @@
+{
+    "name": "getpastthemonkey/db-link",
+    "description": "A lightweight database abstraction layer for PHP",
+    "autoload": {
+        "psr-4": {
+            "Getpastthemonkey\\DbLink\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Sven Grübel",
+            "email": "sven.gruebel@gmx.ch"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    }
+}
