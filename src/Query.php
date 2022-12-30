@@ -7,7 +7,7 @@ use Iterator;
 use LogicException;
 use PDO;
 use ReflectionException;
-use ReflectionProperty;
+use ReflectionMethod;
 
 final class Query implements Countable, Iterator
 {
@@ -35,12 +35,11 @@ final class Query implements Countable, Iterator
         }
 
         try {
-            $table_property = new ReflectionProperty($this->model_class, "TABLE_NAME");
+            $table_property = new ReflectionMethod($this->model_class, "get_table_name");
+            $table_name = $table_property->invoke(null);
         } catch (ReflectionException) {
-            throw new LogicException("Model class \"$this->model_class\" does not have a table name");
+            throw new LogicException("Model \"$this->model_class\" does not have a get_table_name() function");
         }
-
-        $table_name = $table_property->getValue();
 
         $stmt = $this->PDO->prepare("SELECT * FROM $table_name");
         $stmt->execute();

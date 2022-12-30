@@ -2,14 +2,13 @@
 
 namespace Getpastthemonkey\DbLink;
 
-use LogicException;
 use PDO;
 
 abstract class Model
 {
-    protected static ?string $TABLE_NAME = NULL;
+    abstract protected static function get_table_name(): string;
 
-    protected ?array $ATTRIBUTES = NULL;
+    abstract protected static function get_attributes(): array;
 
     private readonly PDO $PDO;
 
@@ -23,11 +22,7 @@ abstract class Model
 
     public static function objects(): Query
     {
-        if (is_null(self::$TABLE_NAME)) {
-            throw new LogicException("Subclass of Model must have a table name configured");
-        }
-
-        return new Query(self::class);
+        return new Query(static::class);
     }
 
     public function save(): void
