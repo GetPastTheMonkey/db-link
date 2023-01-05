@@ -3,6 +3,9 @@
 namespace Getpastthemonkey\DbLink;
 
 use Countable;
+use Getpastthemonkey\DbLink\filters\F_AND;
+use Getpastthemonkey\DbLink\filters\F_NOT;
+use Getpastthemonkey\DbLink\filters\Filter;
 use Iterator;
 use LogicException;
 use PDO;
@@ -14,7 +17,7 @@ final class Query implements Countable, Iterator
     private readonly string $model_class;
     private readonly PDO $PDO;
 
-    private array $filters;
+    private ?Filter $filter = null;
     private array $orders;
     private int $limit;
 
@@ -41,8 +44,21 @@ final class Query implements Countable, Iterator
             throw new LogicException("Model \"$this->model_class\" does not have a get_table_name() function");
         }
 
-        $stmt = $this->PDO->prepare("SELECT * FROM $table_name");
-        $stmt->execute();
+        // Build SQL statement
+        $raw_sql = "SELECT * FROM $table_name";
+        if (!is_null($this->filter)) $raw_sql .= " WHERE " . $this->filter->get_where_clause();
+
+        // Prepare SQL statement
+        $stmt = $this->PDO->prepare($raw_sql);
+
+        // Execute SQL statement
+        if (is_null($this->filter)) {
+            $stmt->execute();
+        } else {
+            $stmt->execute($this->filter->get_parameters());
+        }
+
+        // Fetch all results
         $this->data = $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $this->model_class);
         $this->data_index = 0;
     }
@@ -55,16 +71,20 @@ final class Query implements Countable, Iterator
     //////////////////////////////////////////////////
     /// Django-inspired interface
 
-    public function filter(): Query
+    public function filter(Filter $filter): Query
     {
         $this->invalidate();
+        if (is_null($this->filter)) {
+            $this->filter = $filter;
+        } else {
+            $this->filter = new F_AND($this->filter, $filter);
+        }
         return $this;
     }
 
-    public function exclude(): Query
+    public function exclude(Filter $filter): Query
     {
-        $this->invalidate();
-        return $this;
+        return $this->filter(new F_NOT($filter));
     }
 
     public function limit(): Query
@@ -128,12 +148,9 @@ final class Query implements Countable, Iterator
     public function key(): ?int
     {
         $this->fetch();
-        if ($this->valid())
-        {
+        if ($this->valid()) {
             return $this->data_index;
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
