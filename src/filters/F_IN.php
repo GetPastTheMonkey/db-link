@@ -4,7 +4,7 @@ namespace Getpastthemonkey\DbLink\filters;
 
 use LogicException;
 
-class F_IN implements Filter
+final class F_IN implements Filter
 {
     private string $column;
     private array $values;
