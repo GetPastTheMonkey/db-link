@@ -9,7 +9,7 @@ final class F_IN implements Filter
     private string $column;
     private array $values;
 
-    public function __construct(string $column, ...$values)
+    public function __construct(string $column, array ...$values)
     {
         // Sanity check -> Must have at least one value
         if (count($values) == 0) {
