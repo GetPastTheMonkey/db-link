@@ -19,7 +19,8 @@ final class Query implements Countable, Iterator
 
     private ?Filter $filter = null;
     private array $orders;
-    private int $limit;
+    private int $limit = 0;
+    private int $offset = 0;
 
     // Data storage
     private ?array $data = null;
@@ -46,7 +47,8 @@ final class Query implements Countable, Iterator
 
         // Build SQL statement
         $raw_sql = "SELECT * FROM $table_name";
-        if (!is_null($this->filter)) $raw_sql .= " WHERE " . $this->filter->get_where_clause();
+        if (!is_null($this->filter))    $raw_sql .= PHP_EOL . "WHERE " . $this->filter->get_where_clause();
+        if ($this->limit > 0)           $raw_sql .= PHP_EOL . "LIMIT $this->offset, $this->limit";
 
         // Prepare SQL statement
         $stmt = $this->PDO->prepare($raw_sql);
@@ -87,9 +89,19 @@ final class Query implements Countable, Iterator
         return $this->filter(new F_NOT($filter));
     }
 
-    public function limit(): Query
+    public function limit(int $limit, int $offset = 0): Query
     {
+        if ($limit < 0) {
+            throw new LogicException("Query limit cannot be lower than 0");
+        }
+
+        if ($offset < 0) {
+            throw new LogicException("Query offset cannot be lower than 0");
+        }
+
         $this->invalidate();
+        $this->limit = $limit;
+        $this->offset = $offset;
         return $this;
     }
 
