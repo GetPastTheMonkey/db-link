@@ -2,6 +2,7 @@
 
 namespace Getpastthemonkey\DbLink;
 
+use AssertionError;
 use Countable;
 use Getpastthemonkey\DbLink\filters\F_AND;
 use Getpastthemonkey\DbLink\filters\F_NOT;
@@ -17,8 +18,10 @@ final class Query implements Countable, Iterator
     private readonly string $model_class;
     private readonly PDO $PDO;
 
+    // Variables for building the SQL statement
     private ?Filter $filter = null;
-    private array $orders;
+    private array $order_fields = array();
+    private array $order_directions = array();
     private int $limit = 0;
     private int $offset = 0;
 
@@ -47,8 +50,9 @@ final class Query implements Countable, Iterator
 
         // Build SQL statement
         $raw_sql = "SELECT * FROM $table_name";
-        if (!is_null($this->filter))    $raw_sql .= PHP_EOL . "WHERE " . $this->filter->get_where_clause();
-        if ($this->limit > 0)           $raw_sql .= PHP_EOL . "LIMIT $this->offset, $this->limit";
+        if (!is_null($this->filter))        $raw_sql .= PHP_EOL . "WHERE " . $this->filter->get_where_clause();
+        if (count($this->order_fields) > 0) $raw_sql .= PHP_EOL . "ORDER BY " . $this->get_order_by_clause();
+        if ($this->limit > 0)               $raw_sql .= PHP_EOL . "LIMIT $this->offset, $this->limit";
 
         // Prepare SQL statement
         $stmt = $this->PDO->prepare($raw_sql);
@@ -68,6 +72,23 @@ final class Query implements Countable, Iterator
     private function invalidate(): void
     {
         $this->data = null;
+    }
+
+    private function get_order_by_clause(): string
+    {
+        if (count($this->order_fields) != count($this->order_directions)) {
+            throw new AssertionError("Count of order fields and order directions does not match!");
+        }
+
+        $arr = array();
+        $combined = array_map(null, $this->order_fields, $this->order_directions);
+
+        foreach ($combined as list($field, $ascending)) {
+            $direction = $ascending ? "ASC" : "DESC";
+            $arr[] = "$field $direction";
+        }
+
+        return implode(", ", $arr);
     }
 
     //////////////////////////////////////////////////
@@ -105,9 +126,13 @@ final class Query implements Countable, Iterator
         return $this;
     }
 
-    public function order(): Query
+    public function order(string $field, bool $ascending): Query
     {
         $this->invalidate();
+
+        $this->order_fields[] = $field;
+        $this->order_directions[] = $ascending;
+
         return $this;
     }
 
