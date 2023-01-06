@@ -31,6 +31,10 @@ final class Query implements Countable, Iterator
 
     public function __construct(string $model_class)
     {
+        if (!is_subclass_of($model_class, Model::class)) {
+            throw new LogicException("Class $model_class must be a subclass of the " . Model::class . " class");
+        }
+
         $this->model_class = $model_class;
         $this->PDO = DatabaseManager::getPDO();
     }
