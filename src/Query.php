@@ -130,7 +130,7 @@ final class Query implements Countable, Iterator
         return $this;
     }
 
-    public function order(string $field, bool $ascending): Query
+    public function order(string $field, bool $ascending = true): Query
     {
         $this->invalidate();
 
