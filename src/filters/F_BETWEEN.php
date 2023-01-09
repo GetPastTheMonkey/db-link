@@ -2,7 +2,7 @@
 
 namespace Getpastthemonkey\DbLink\filters;
 
-class F_BETWEEN implements Filter
+final class F_BETWEEN implements Filter
 {
     private string $column;
     private string|int $left_val;
