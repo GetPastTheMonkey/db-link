@@ -2,6 +2,8 @@
 
 namespace Getpastthemonkey\DbLink;
 
+use Getpastthemonkey\DbLink\exceptions\ValidationException;
+use Getpastthemonkey\DbLink\fields\Field;
 use LogicException;
 use PDO;
 
@@ -9,6 +11,9 @@ abstract class Model
 {
     abstract protected static function get_table_name(): string;
 
+    /**
+     * @return array<string, Field>
+     */
     abstract protected static function get_attributes(): array;
 
     private array $data;
@@ -22,6 +27,11 @@ abstract class Model
         $this->PDO = DatabaseManager::getPDO();
         $this->data = [];
         $this->attributes = static::get_attributes();
+
+        // Set default values
+        foreach ($this->attributes as $col => $field) {
+            $this->data[$col] = $field->default;
+        }
     }
 
     //////////////////////////////////////////////////
@@ -32,10 +42,45 @@ abstract class Model
         return new Query(static::class);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function save(): void
     {
+        $this->validate();
         // TODO: Implement saving (creation and updating)
     }
+
+    /**
+     * @throws ValidationException
+     */
+    public function validate(): void
+    {
+        $errors = $this->get_validation_errors();
+
+        if (count($errors) > 0) {
+            throw new ValidationException("Nested validation error for " . static::class . " model", $errors);
+        }
+    }
+
+    /**
+     * @return array<string, ValidationException>
+     */
+    public function get_validation_errors(): array
+    {
+        $errors = array();
+
+        foreach ($this->attributes as $col => $field) {
+            try {
+                $field->validate($this->data[$col]);
+            } catch (ValidationException $e) {
+                $errors[$col] = $e;
+            }
+        }
+
+        return $errors;
+    }
+
 
     //////////////////////////////////////////////////
     /// Magic method overloading
@@ -58,7 +103,7 @@ abstract class Model
     private function enforce_has_attribute(string $attr): void
     {
         if (!$this->has_attribute($attr)) {
-            throw new LogicException("Model class \"".static::class."\" has no attribute \"".$attr."\"");
+            throw new LogicException("Model class \"" . static::class . "\" has no attribute \"" . $attr . "\"");
         }
     }
 
