@@ -21,13 +21,13 @@ class IntegerField extends Field
         parent::validate($value);
 
         if (!is_numeric($value)) {
-            throw new ValidationException(static::class . " value is not numeric");
+            throw new ValidationException($this->getShortName() . " value is not numeric");
         }
 
         $int_value = (int)$value;
 
         if (($int_value < $this->min) or ($int_value > $this->max)) {
-            throw new ValidationException(static::class . " value of $int_value is not in the defined range [$this->min, $this->max]");
+            throw new ValidationException($this->getShortName() . " value of $int_value is not in the defined range [$this->min, $this->max]");
         }
     }
 }

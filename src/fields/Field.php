@@ -3,6 +3,7 @@
 namespace Getpastthemonkey\DbLink\fields;
 
 use Getpastthemonkey\DbLink\exceptions\ValidationException;
+use ReflectionClass;
 
 abstract class Field
 {
@@ -23,7 +24,12 @@ abstract class Field
     public function validate(mixed $value): void
     {
         if(!$this->is_null_allowed and is_null($value)) {
-            throw new ValidationException(static::class . " value was NULL, but NULL is not allowed for this field");
+            throw new ValidationException($this->getShortName() . " value was NULL, but NULL is not allowed for this field");
         }
+    }
+
+    public function getShortName(): string
+    {
+        return (new ReflectionClass(static::class))->getShortName();
     }
 }

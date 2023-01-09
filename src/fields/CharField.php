@@ -19,13 +19,13 @@ class CharField extends Field
         parent::validate($value);
 
         if (!is_string($value)) {
-            throw new ValidationException(static::class . " value is not a string");
+            throw new ValidationException($this->getShortName() . " value is not a string");
         }
 
         $value_len = strlen($value);
 
         if ($value_len > $this->max_length) {
-            throw new ValidationException(static::class . " value is too long. Length is " . $value_len . ". Max length is " . $this->max_length);
+            throw new ValidationException($this->getShortName() . " value is too long. Length is " . $value_len . ". Max length is " . $this->max_length);
         }
     }
 }
