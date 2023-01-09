@@ -70,6 +70,11 @@ final class Query implements Countable, Iterator
 
         // Fetch all results
         $this->data = $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $this->model_class);
+
+        foreach ($this->data as $datum) {
+            $datum->set_existing();
+        }
+
         $this->data_index = 0;
     }
 

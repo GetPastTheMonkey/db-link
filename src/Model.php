@@ -21,12 +21,14 @@ abstract class Model
     private readonly PDO $PDO;
 
     private readonly array $attributes;
+    private bool $exists;
 
     public function __construct()
     {
         $this->PDO = DatabaseManager::getPDO();
         $this->data = [];
         $this->attributes = static::get_attributes();
+        $this->exists = false;
 
         // Set default values
         foreach ($this->attributes as $col => $field) {
@@ -99,6 +101,11 @@ abstract class Model
 
     //////////////////////////////////////////////////
     /// Internal methods
+
+    public function set_existing(): void
+    {
+        $this->exists = true;
+    }
 
     private function enforce_has_attribute(string $attr): void
     {
