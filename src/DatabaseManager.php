@@ -13,16 +13,9 @@ final class DatabaseManager
     {
         if (is_null(self::$PDO)) {
             // Create new PDO connection
-            $config_file = __DIR__."/dblink-config.php";
-            if (!is_file($config_file)) {
-                throw new LogicException("No configuration file found. Tried $config_file");
-            }
-
-            require_once $config_file;
-
-            $function = "create_pdo";
+            $function = "dblink_create_pdo";
             if (!function_exists($function)) {
-                throw new LogicException("Config file does not contain the function \"$function\"");
+                throw new LogicException("The function \"$function\" was not found");
             }
 
             self::$PDO = call_user_func($function);
