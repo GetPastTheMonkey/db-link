@@ -20,6 +20,10 @@ class IntegerField extends Field
     {
         parent::validate($value);
 
+        if (is_null($value)) {
+            return;
+        }
+
         if (!is_numeric($value)) {
             throw new ValidationException($this->getShortName() . " value is not numeric");
         }

@@ -23,7 +23,7 @@ abstract class Field
      */
     public function validate(mixed $value): void
     {
-        if(!$this->is_null_allowed and is_null($value)) {
+        if (!$this->is_null_allowed and is_null($value)) {
             throw new ValidationException($this->getShortName() . " value was NULL, but NULL is not allowed for this field");
         }
     }

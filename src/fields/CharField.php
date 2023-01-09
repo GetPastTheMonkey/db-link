@@ -18,6 +18,10 @@ class CharField extends Field
     {
         parent::validate($value);
 
+        if (is_null($value)) {
+            return;
+        }
+
         if (!is_string($value)) {
             throw new ValidationException($this->getShortName() . " value is not a string");
         }
