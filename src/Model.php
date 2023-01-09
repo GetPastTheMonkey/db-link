@@ -22,6 +22,7 @@ abstract class Model
 
     private readonly array $attributes;
     private bool $exists;
+    private array $pk_cache;
 
     public function __construct()
     {
@@ -34,6 +35,8 @@ abstract class Model
         foreach ($this->attributes as $col => $field) {
             $this->data[$col] = $field->default;
         }
+
+        $this->pk_cache = array();
     }
 
     //////////////////////////////////////////////////
@@ -101,6 +104,18 @@ abstract class Model
         return $errors;
     }
 
+    public function get_public_key_fields(): array
+    {
+        $arr = array();
+
+        foreach ($this->attributes as $col => $field) {
+            if ($field->is_primary_key) {
+                $arr[$col] = $field;
+            }
+        }
+
+        return $arr;
+    }
 
     //////////////////////////////////////////////////
     /// Magic method overloading
@@ -123,6 +138,11 @@ abstract class Model
     public function set_existing(): void
     {
         $this->exists = true;
+        $pk_fields = $this->get_public_key_fields();
+
+        foreach (array_keys($pk_fields) as $col) {
+            $this->pk_cache[$col] = $this->data[$col];
+        }
     }
 
     private function enforce_has_attribute(string $attr): void
