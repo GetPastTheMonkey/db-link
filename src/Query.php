@@ -52,8 +52,16 @@ final class Query implements Countable, Iterator
             throw new LogicException("Model \"$this->model_class\" does not have a get_table_name() function");
         }
 
+        try {
+            $attributes_property = new ReflectionMethod($this->model_class, "get_attributes");
+            $attributes = $attributes_property->invoke(null);
+        } catch (ReflectionException) {
+            throw new LogicException("Model \"$this->model_class\" does not have a get_attributes() function");
+        }
+
         // Build SQL statement
-        $raw_sql = "SELECT * FROM $table_name";
+        $attributes_imploded = implode(", ", array_keys($attributes));
+        $raw_sql = "SELECT $attributes_imploded FROM $table_name";
         if (!is_null($this->filter))        $raw_sql .= PHP_EOL . "WHERE " . $this->filter->get_where_clause();
         if (count($this->order_fields) > 0) $raw_sql .= PHP_EOL . "ORDER BY " . $this->get_order_by_clause();
         if ($this->limit > 0)               $raw_sql .= PHP_EOL . "LIMIT $this->offset, $this->limit";
