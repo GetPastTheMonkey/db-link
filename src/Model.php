@@ -7,8 +7,10 @@ use Getpastthemonkey\DbLink\exceptions\ValidationException;
 use Getpastthemonkey\DbLink\fields\Field;
 use LogicException;
 use PDO;
+use ReflectionClass;
+use Stringable;
 
-abstract class Model implements ArrayAccess
+abstract class Model implements ArrayAccess, Stringable
 {
     abstract protected static function get_table_name(): string;
 
@@ -105,7 +107,7 @@ abstract class Model implements ArrayAccess
         return $errors;
     }
 
-    public function get_public_key_fields(): array
+    public function get_primary_key_fields(): array
     {
         $arr = array();
 
@@ -140,6 +142,19 @@ abstract class Model implements ArrayAccess
     {
         $this->offsetUnset($name);
     }
+
+    public function __toString(): string
+    {
+        $existing = $this->exists ? "existing" : "new";
+        $short_name = (new ReflectionClass(static::class))->getShortName();
+        $pk_arr = array();
+
+        foreach (array_keys($this->get_primary_key_fields()) as $col) {
+            $pk_arr[] = $col . "=" . $this->offsetGet($col);
+        }
+
+        $pk_arr_imploded = implode(", ", $pk_arr);
+        return "$short_name model instance ($existing, $pk_arr_imploded)";
     }
 
     //////////////////////////////////////////////////
@@ -148,7 +163,7 @@ abstract class Model implements ArrayAccess
     public function set_existing(): void
     {
         $this->exists = true;
-        $pk_fields = $this->get_public_key_fields();
+        $pk_fields = $this->get_primary_key_fields();
 
         foreach (array_keys($pk_fields) as $col) {
             $this->pk_cache[$col] = $this->data[$col];
