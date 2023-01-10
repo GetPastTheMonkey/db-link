@@ -2,12 +2,13 @@
 
 namespace Getpastthemonkey\DbLink;
 
+use ArrayAccess;
 use Getpastthemonkey\DbLink\exceptions\ValidationException;
 use Getpastthemonkey\DbLink\fields\Field;
 use LogicException;
 use PDO;
 
-abstract class Model
+abstract class Model implements ArrayAccess
 {
     abstract protected static function get_table_name(): string;
 
@@ -122,14 +123,23 @@ abstract class Model
 
     public function __get(string $name): mixed
     {
-        $this->enforce_has_attribute($name);
-        return $this->data[$name];
+        return $this->offsetGet($name);
     }
 
     public function __set(string $name, mixed $value): void
     {
-        $this->enforce_has_attribute($name);
-        $this->data[$name] = $value;
+        $this->offsetSet($name, $value);
+    }
+
+    public function __isset(string $name): bool
+    {
+        return $this->offsetExists($name);
+    }
+
+    public function __unset(string $name): void
+    {
+        $this->offsetUnset($name);
+    }
     }
 
     //////////////////////////////////////////////////
@@ -147,13 +157,34 @@ abstract class Model
 
     private function enforce_has_attribute(string $attr): void
     {
-        if (!$this->has_attribute($attr)) {
+        if (!$this->offsetExists($attr)) {
             throw new LogicException("Model class \"" . static::class . "\" has no attribute \"" . $attr . "\"");
         }
     }
 
-    private function has_attribute(string $attr): bool
+    //////////////////////////////////////////////////
+    /// ArrayAccess interface
+
+    public function offsetExists(mixed $offset): bool
     {
-        return array_key_exists($attr, $this->attributes);
+        return array_key_exists((string)$offset, $this->attributes);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        $this->enforce_has_attribute($offset);
+        return $this->data[$offset];
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->enforce_has_attribute($offset);
+        $this->data[$offset] = $value;
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        $this->enforce_has_attribute($offset);
+        $this->offsetSet($offset, $this->attributes[$offset]->default);
     }
 }
