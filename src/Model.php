@@ -81,14 +81,12 @@ abstract class Model implements ArrayAccess, Stringable
             $raw_sql = "INSERT INTO " . static::get_table_name() . " (" . $columns_imploded . ") VALUES (" . $question_marks_imploded . ")";
         }
 
-        // FIXME: Problem with NULL values --> Number of parameters does not match!
         $stmt = $this->PDO->prepare($raw_sql);
         $stmt->execute($parameters);
 
-        // If it was an update -> Update internal primary key storage as they might have been changed
-        if ($this->exists) {
-            $this->set_existing();
-        }
+        // Mark the model instance as existing because the save was successful
+        // This also updates the internal primary key storage to the new values
+        $this->set_existing();
     }
 
     /**
