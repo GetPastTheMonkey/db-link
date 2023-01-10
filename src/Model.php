@@ -57,24 +57,38 @@ abstract class Model implements ArrayAccess, Stringable
     {
         $this->validate();
 
+        $columns = array_keys($this->attributes);
+        $parameters = array_values($this->data);
+
         if ($this->exists) {
-            // TODO: Implement UPDATE
-            $raw_sql = "UPDATE " . static::get_table_name() . " SET XX WHERE pk = pk_value";
-            $parameters = $this->data;
+            $fn = fn($col) => "$col = ?";
+
+            $attributes = array_map($fn, $columns);
+            $attributes_imploded = implode(", ", $attributes);
+
+            $pk_cols = array_keys($this->get_primary_key_fields());
+            $pk_attrs = array_map($fn, $pk_cols);
+            $pk_attrs_imploded = implode(" AND ", $pk_attrs);
+
+            $raw_sql = "UPDATE " . static::get_table_name() . " SET $attributes_imploded WHERE $pk_attrs_imploded";
+            $parameters = array_merge($parameters, array_values($this->pk_cache));
         } else {
-            $columns = array_keys($this->attributes);
             $columns_imploded = implode(", ", $columns);
 
             $question_marks = array_fill(0, count($this->attributes), "?");
             $question_marks_imploded = implode(", ", $question_marks);
 
             $raw_sql = "INSERT INTO " . static::get_table_name() . " (" . $columns_imploded . ") VALUES (" . $question_marks_imploded . ")";
-            $parameters = $this->data;
         }
 
         // FIXME: Problem with NULL values --> Number of parameters does not match!
         $stmt = $this->PDO->prepare($raw_sql);
         $stmt->execute($parameters);
+
+        // If it was an update -> Update internal primary key storage as they might have been changed
+        if ($this->exists) {
+            $this->set_existing();
+        }
     }
 
     /**
