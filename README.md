@@ -217,7 +217,28 @@ try {
 
 ## Deleting Instances
 
-Deleting instances is currently not yet supported, but support will be added soon(TM).
+Single model instances can be deleted by calling the `delete()` function. Note that the database entry will be deleted,
+but the model instance still exists in the code.
+
+Here is an example for how to delete a user with ID 123.
+
+```php
+use \Getpastthemonkey\DbLink\filters\F_EQ;
+
+$user = User::objects()->filter(new F_EQ("id", 123))->current();
+$user->delete();
+```
+
+Bulk deletion is supported by calling `delete()` on a `Query` instance. All entries returned by the query will be
+deleted.
+
+Here is an example for how to delete all users that are not administrators.
+
+```php
+use \Getpastthemonkey\DbLink\filters\F_EQ;
+
+User::objects()->filter(new F_EQ("is_admin", 0))->delete();
+```
 
 ## Troubleshooting
 

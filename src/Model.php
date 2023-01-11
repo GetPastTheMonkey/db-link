@@ -88,6 +88,24 @@ abstract class Model implements ArrayAccess, Stringable
         $this->set_existing();
     }
 
+    public function delete(): void
+    {
+        if (!$this->exists) {
+            return;
+        }
+
+        $pk_attrs = array_map(fn($col) => "$col = ?", $this->get_primary_key_columns());
+        $pk_attrs_imploded = implode(" AND ", $pk_attrs);
+        $params = array_values($this->pk_cache);
+
+        $raw_sql = "DELETE FROM " . static::get_table_name() . " WHERE $pk_attrs_imploded";
+        $stmt = $this->PDO->prepare($raw_sql);
+        $stmt->execute($params);
+
+        // Mark model instance as non-existing, so next save will create instead of update
+        $this->exists = false;
+    }
+
     /**
      * @throws ValidationException
      */

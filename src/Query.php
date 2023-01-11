@@ -153,6 +153,13 @@ final class Query implements Countable, Iterator
         return $this;
     }
 
+    public function delete(): void
+    {
+        foreach ($this as $el) {
+            $el->delete();
+        }
+    }
+
     //////////////////////////////////////////////////
     /// Countable interface
 
