@@ -97,14 +97,14 @@ abstract class Model implements ArrayAccess, Stringable
         $errors = $this->get_validation_errors();
 
         if (count($errors) > 0) {
-            throw new ValidationException("Nested validation error for " . static::class . " model", $errors);
+            throw new ValidationException("Validation error for " . static::class . " model", $errors);
         }
     }
 
     /**
      * @return array<string, ValidationException>
      */
-    public function get_validation_errors(): array
+    private function get_validation_errors(): array
     {
         $errors = array();
 
@@ -119,7 +119,7 @@ abstract class Model implements ArrayAccess, Stringable
         return $errors;
     }
 
-    public function get_primary_key_fields(): array
+    private function get_primary_key_fields(): array
     {
         $arr = array();
 
