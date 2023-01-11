@@ -66,8 +66,7 @@ abstract class Model implements ArrayAccess, Stringable
             $attributes = array_map($fn, $columns);
             $attributes_imploded = implode(", ", $attributes);
 
-            $pk_cols = array_keys($this->get_primary_key_fields());
-            $pk_attrs = array_map($fn, $pk_cols);
+            $pk_attrs = array_map($fn, $this->get_primary_key_columns());
             $pk_attrs_imploded = implode(" AND ", $pk_attrs);
 
             $raw_sql = "UPDATE " . static::get_table_name() . " SET $attributes_imploded WHERE $pk_attrs_imploded";
@@ -119,13 +118,13 @@ abstract class Model implements ArrayAccess, Stringable
         return $errors;
     }
 
-    private function get_primary_key_fields(): array
+    private function get_primary_key_columns(): array
     {
         $arr = array();
 
         foreach ($this->attributes as $col => $field) {
             if ($field->is_primary_key) {
-                $arr[$col] = $field;
+                $arr[] = $col;
             }
         }
 
@@ -161,7 +160,7 @@ abstract class Model implements ArrayAccess, Stringable
         $short_name = (new ReflectionClass(static::class))->getShortName();
         $pk_arr = array();
 
-        foreach (array_keys($this->get_primary_key_fields()) as $col) {
+        foreach ($this->get_primary_key_columns() as $col) {
             $pk_arr[] = $col . "=" . $this->offsetGet($col);
         }
 
@@ -175,9 +174,8 @@ abstract class Model implements ArrayAccess, Stringable
     public function set_existing(): void
     {
         $this->exists = true;
-        $pk_fields = $this->get_primary_key_fields();
 
-        foreach (array_keys($pk_fields) as $col) {
+        foreach ($this->get_primary_key_columns() as $col) {
             $this->pk_cache[$col] = $this->data[$col];
         }
     }
