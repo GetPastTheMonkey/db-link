@@ -4,6 +4,8 @@ namespace Getpastthemonkey\DbLink;
 
 use AssertionError;
 use Countable;
+use Getpastthemonkey\DbLink\exceptions\MultipleObjectsReturnedException;
+use Getpastthemonkey\DbLink\exceptions\ObjectDoesNotExistException;
 use Getpastthemonkey\DbLink\filters\F_AND;
 use Getpastthemonkey\DbLink\filters\F_NOT;
 use Getpastthemonkey\DbLink\filters\Filter;
@@ -151,6 +153,26 @@ final class Query implements Countable, Iterator
         $this->order_directions[] = $ascending;
 
         return $this;
+    }
+
+    /**
+     * @throws ObjectDoesNotExistException
+     * @throws MultipleObjectsReturnedException
+     */
+    public function get(): Model
+    {
+        $this->fetch();
+        $count = count($this);
+
+        switch (count($this)) {
+            case 0:
+                throw new ObjectDoesNotExistException($this->model_class);
+            case 1:
+                $this->rewind();
+                return $this->current();
+            default:
+                throw new MultipleObjectsReturnedException($this->model_class, $count);
+        }
     }
 
     public function delete(): void

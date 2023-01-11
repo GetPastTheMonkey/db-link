@@ -130,6 +130,13 @@ namespace.
 | F_NOT     | NOT a             | Logical NOT of a filter                                                         |
 | F_OR      | a OR b            | Logical OR of two filters                                                       |
 
+### Load Single Model Instance
+
+If you filter for a single instance, you can use the `get()` method of the `Query` class.
+
+If the query does not return an entry, a `ObjectDoesNotExistException` will be thrown. If the query returns more than
+one entry, a `MultipleObjectsReturnedException` will be thrown.
+
 ## Accessing Model Attributes
 
 The `Model` class implements the `ArrayAccess` interface, and it overloads most magic methods. Thus, there are two ways
@@ -225,7 +232,7 @@ Here is an example for how to delete a user with ID 123.
 ```php
 use \Getpastthemonkey\DbLink\filters\F_EQ;
 
-$user = User::objects()->filter(new F_EQ("id", 123))->current();
+$user = User::objects()->filter(new F_EQ("id", 123))->get();
 $user->delete();
 ```
 

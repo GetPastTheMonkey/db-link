@@ -2,9 +2,7 @@
 
 namespace Getpastthemonkey\DbLink\exceptions;
 
-use Exception;
-
-class ValidationException extends Exception
+final class ValidationException extends DbLinkException
 {
     public readonly ?array $children;
 
