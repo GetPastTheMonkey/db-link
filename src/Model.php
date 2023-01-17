@@ -3,9 +3,9 @@
 namespace Getpastthemonkey\DbLink;
 
 use ArrayAccess;
+use Getpastthemonkey\DbLink\exceptions\FieldDoesNotExistException;
 use Getpastthemonkey\DbLink\exceptions\ValidationException;
 use Getpastthemonkey\DbLink\fields\Field;
-use LogicException;
 use PDO;
 use ReflectionClass;
 use Stringable;
@@ -152,11 +152,17 @@ abstract class Model implements ArrayAccess, Stringable
     //////////////////////////////////////////////////
     /// Magic method overloading
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     public function __get(string $name): mixed
     {
         return $this->offsetGet($name);
     }
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     public function __set(string $name, mixed $value): void
     {
         $this->offsetSet($name, $value);
@@ -167,6 +173,9 @@ abstract class Model implements ArrayAccess, Stringable
         return $this->offsetExists($name);
     }
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     public function __unset(string $name): void
     {
         $this->offsetUnset($name);
@@ -198,10 +207,13 @@ abstract class Model implements ArrayAccess, Stringable
         }
     }
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     private function enforce_has_attribute(string $attr): void
     {
         if (!$this->offsetExists($attr)) {
-            throw new LogicException("Model class \"" . static::class . "\" has no attribute \"" . $attr . "\"");
+            throw new FieldDoesNotExistException($attr, static::class);
         }
     }
 
@@ -213,18 +225,27 @@ abstract class Model implements ArrayAccess, Stringable
         return array_key_exists((string)$offset, $this->attributes);
     }
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     public function offsetGet(mixed $offset): mixed
     {
         $this->enforce_has_attribute($offset);
         return $this->data[$offset];
     }
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->enforce_has_attribute($offset);
         $this->data[$offset] = $value;
     }
 
+    /**
+     * @throws FieldDoesNotExistException
+     */
     public function offsetUnset(mixed $offset): void
     {
         $this->enforce_has_attribute($offset);
