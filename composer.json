@@ -1,19 +1,25 @@
 {
     "name": "getpastthemonkey/db-link",
+    "type": "library",
     "description": "A lightweight database abstraction layer for PHP",
-    "autoload": {
-        "psr-4": {
-            "Getpastthemonkey\\DbLink\\": "src/"
-        }
-    },
+    "keywords": ["database", "abstraction", "layer", "orm", "django"],
+    "homepage": "https://github.com/GetPastTheMonkey/db-link",
+    "license": "MIT",
     "authors": [
         {
             "name": "Sven Grübel",
-            "email": "sven@gruebel.dev"
+            "email": "sven@gruebel.dev",
+            "homepage": "https://gruebel.dev/",
+            "role": "Developer"
         }
     ],
     "require": {
         "php": ">=8.1",
         "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Getpastthemonkey\\DbLink\\": "src/"
+        }
     }
 }
