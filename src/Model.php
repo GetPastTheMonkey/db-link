@@ -6,6 +6,7 @@ use ArrayAccess;
 use Getpastthemonkey\DbLink\exceptions\FieldDoesNotExistException;
 use Getpastthemonkey\DbLink\exceptions\ValidationException;
 use Getpastthemonkey\DbLink\fields\Field;
+use Getpastthemonkey\DbLink\fields\IntegerField;
 use PDO;
 use ReflectionClass;
 use Stringable;
@@ -82,6 +83,18 @@ abstract class Model implements ArrayAccess, Stringable
 
         $stmt = $this->PDO->prepare($raw_sql);
         $stmt->execute($parameters);
+
+        // Get auto increment value if it was an insert and there is an auto increment value to get
+        if (!$this->exists) {
+            foreach ($this->attributes as $col => $field) {
+                if ($field instanceof IntegerField and $field->is_auto_increment) {
+                    $this[$col] = $this->PDO->lastInsertId();
+
+                    // Only one column may be an AUTO_INCREMENT, so it is safe to break here
+                    break;
+                }
+            }
+        }
 
         // Mark the model instance as existing because the save was successful
         // This also updates the internal primary key storage to the new values

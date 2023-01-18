@@ -8,16 +8,22 @@ class IntegerField extends Field
 {
     public readonly int $min;
     public readonly int $max;
+    public readonly bool $is_auto_increment;
 
-    public function __construct(int $min = -2_147_483_648, int $max = 2_147_483_647, int $default = null, bool $is_null_allowed = false, bool $is_primary_key = false)
+    public function __construct(int $min = -2_147_483_648, int $max = 2_147_483_647, int $default = null, bool $is_null_allowed = false, bool $is_primary_key = false, bool $is_auto_increment = false)
     {
         parent::__construct($default, $is_null_allowed, $is_primary_key);
         $this->min = $min;
         $this->max = $max;
+        $this->is_auto_increment = $is_auto_increment;
     }
 
     public function validate(mixed $value): void
     {
+        if (is_null($value) and $this->is_auto_increment) {
+            return;
+        }
+
         parent::validate($value);
 
         if (is_null($value)) {
