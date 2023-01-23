@@ -7,11 +7,12 @@ use Getpastthemonkey\DbLink\exceptions\FieldDoesNotExistException;
 use Getpastthemonkey\DbLink\exceptions\ValidationException;
 use Getpastthemonkey\DbLink\fields\Field;
 use Getpastthemonkey\DbLink\fields\IntegerField;
+use Iterator;
 use PDO;
 use ReflectionClass;
 use Stringable;
 
-abstract class Model implements ArrayAccess, Stringable
+abstract class Model implements ArrayAccess, Stringable, Iterator
 {
     abstract protected static function get_table_name(): string;
 
@@ -27,6 +28,7 @@ abstract class Model implements ArrayAccess, Stringable
     private readonly array $attributes;
     private bool $exists;
     private array $pk_cache;
+    private int $iter_idx;
 
     public function __construct()
     {
@@ -41,6 +43,7 @@ abstract class Model implements ArrayAccess, Stringable
         }
 
         $this->pk_cache = array();
+        $this->iter_idx = 0;
     }
 
     //////////////////////////////////////////////////
@@ -263,5 +266,31 @@ abstract class Model implements ArrayAccess, Stringable
     {
         $this->enforce_has_attribute($offset);
         $this->offsetSet($offset, $this->attributes[$offset]->default);
+    }
+
+    public function current(): mixed
+    {
+        return $this->data[$this->key()];
+    }
+
+    public function next(): void
+    {
+        $this->iter_idx += 1;
+    }
+
+    public function key(): string
+    {
+        $attr_keys = array_keys($this->attributes);
+        return $attr_keys[$this->iter_idx];
+    }
+
+    public function valid(): bool
+    {
+        return 0 <= $this->iter_idx and $this->iter_idx < count($this->attributes);
+    }
+
+    public function rewind(): void
+    {
+        $this->iter_idx = 0;
     }
 }
